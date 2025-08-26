@@ -1,0 +1,28 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: guestbook-rules
+  namespace: monitoring
+  labels:
+    release: kps
+spec:
+  groups:
+  - name: guestbook.app
+    rules:
+    - alert: FrontendHighErrorRate
+      expr: |
+        (sum(rate(flask_http_request_total{namespace="guestbook",status=~"5.."}[5m]))
+         / clamp_min(sum(rate(flask_http_request_total{namespace="guestbook"}[5m])), 1)) > 0.02
+      for: 5m
+      labels: { severity: critical }
+      annotations:
+        summary: "Frontend HTTP 5xx > 2% (5m)"
+        description: "High error rate on frontend."
+    - alert: BackendHighLatencyP95
+      expr: |
+        histogram_quantile(0.95, sum(rate(flask_http_request_duration_seconds_bucket{namespace="guestbook"}[5m])) by (le)) > 1
+      for: 10m
+      labels: { severity: warning }
+      annotations:
+        summary: "Backend p95 > 1s (10m)"
+        description: "Backend latency is high."

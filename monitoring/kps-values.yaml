@@ -1,0 +1,14 @@
+grafana:
+  adminPassword: prom-operator
+  service:
+    type: ClusterIP
+prometheus:
+  prometheusSpec:
+    retention: 12h
+    scrapeInterval: 30s
+alertmanager:
+  config:
+    route:
+      receiver: "null"
+    receivers:
+      - name: "null"
