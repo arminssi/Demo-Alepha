@@ -11,7 +11,7 @@ helm upgrade --install loki grafana/loki-stack \
   --set grafana.enabled=false \
   --set promtail.enabled=true
 
-# adding Loki as a Grafana datasource
+# add Loki as a Grafana datasource
 cat <<'YAML' | kubectl apply -f -
 apiVersion: v1
 kind: ConfigMap
@@ -21,20 +21,23 @@ metadata:
   labels:
     grafana_datasource: "1"
 data:
-  loki-ds.yaml: |
+  loki-datasource.yaml: |
     apiVersion: 1
     datasources:
-      - name: Loki
-        type: loki
-        access: proxy
-        url: http://loki:3100
-        isDefault: false
-        jsonData:
-          maxLines: 1000
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki:3100
+      isDefault: false
+      jsonData:
+        maxLines: 1000
 YAML
 
-# waiting for the pod
+# wait for pods
 kubectl -n monitoring rollout status daemonset/loki-promtail --timeout=3m || true
 kubectl -n monitoring rollout status statefulset/loki --timeout=3m || true
 
-echo " logging ready."
+# restart grafana to pick datasource
+kubectl -n monitoring rollout restart deploy kps-grafana
+
+echo "logging ready."
