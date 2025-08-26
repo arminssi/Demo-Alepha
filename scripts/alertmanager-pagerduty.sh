@@ -9,7 +9,7 @@ receivers:
 - name: "pagerduty"
   pagerduty_configs:
   - routing_key: "${PD_ROUTING_KEY}"
-    severity: "{{ .CommonLabels.severity }}"
+    severity: '{{ if .CommonLabels.severity }}{{ .CommonLabels.severity }}{{ else }}critical{{ end }}'
 inhibit_rules:
 - source_matchers: [severity="critical"]
   target_matchers: [severity="warning"]
@@ -24,4 +24,4 @@ kubectl -n monitoring patch alertmanager kps-kube-prometheus-stack-alertmanager 
   --type merge -p '{"spec":{"configSecret":"kps-alertmanager-config"}}'
 
 kubectl -n monitoring rollout status statefulset/alertmanager-kps-kube-prometheus-stack-alertmanager --timeout=2m
-echo " Hey Armin PD is up"
+echo "Hey Armin, PagerDuty integration is ready!"
