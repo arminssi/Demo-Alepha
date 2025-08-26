@@ -60,3 +60,5 @@ EOF
 ###
 ### Setup Ingress
 kubectl apply -f "https://raw.githubusercontent.com/kubernetes/ingress-nginx/refs/heads/main/deploy/static/provider/kind/deploy.yaml"
+kubectl wait -n ingress-nginx \
+  --for=condition=Available deploy/ingress-nginx-controller --timeout=180s || true # to make ingress usabale immediately
